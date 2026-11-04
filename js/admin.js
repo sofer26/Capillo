@@ -265,3 +265,109 @@ async function initializeAdmin() {
 }
 
 initializeAdmin();
+
+async function loadParticipants() {
+    const container = document.getElementById("participantsContainer");
+    const button = document.getElementById("refreshParticipantsButton");
+
+    if (!container) return;
+
+    button.disabled = true;
+    container.innerHTML = '<p class="muted">Cargando participantes...</p>';
+
+    try {
+        const { data, error } = await client
+            .from("participants")
+            .select(`
+                id,
+                full_name,
+                whatsapp,
+                created_at,
+                reservations (
+                    id,
+                    status,
+                    created_at,
+                    reservation_numbers (
+                        raffle_number_id,
+                        raffle_numbers (
+                            number
+                        )
+                    )
+                )
+            `)
+            .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            container.innerHTML = '<p class="muted">Todavía no hay participantes DEMO.</p>';
+            return;
+        }
+
+        container.innerHTML = "";
+
+        data.forEach(participant => {
+            const card = document.createElement("div");
+
+            card.style.border = "1px solid rgba(255,255,255,0.1)";
+            card.style.borderRadius = "12px";
+            card.style.padding = "16px";
+            card.style.marginBottom = "12px";
+            card.style.background = "rgba(255,255,255,0.03)";
+
+            const reservations = participant.reservations || [];
+
+            const numbers = [];
+
+            reservations.forEach(reservation => {
+                const reservationNumbers =
+                    reservation.reservation_numbers || [];
+
+                reservationNumbers.forEach(item => {
+                    if (item.raffle_numbers) {
+                        numbers.push(item.raffle_numbers.number);
+                    }
+                });
+            });
+
+            numbers.sort((a, b) => a - b);
+
+            const formattedNumbers = numbers.length
+                ? numbers.map(n => String(n).padStart(2, "0")).join(", ")
+                : "Sin números";
+
+            const status =
+                reservations.length > 0
+                    ? reservations[0].status
+                    : "sin reserva";
+
+            card.innerHTML = `
+                <strong>${participant.full_name}</strong>
+                <div style="margin-top:6px">
+                    WhatsApp: ${participant.whatsapp}
+                </div>
+                <div style="margin-top:6px">
+                    Números: <strong>${formattedNumbers}</strong>
+                </div>
+                <div style="margin-top:6px">
+                    Estado: <strong>${status}</strong>
+                </div>
+            `;
+
+            container.appendChild(card);
+        });
+
+    } catch (error) {
+        console.error("Error cargando participantes:", error);
+
+        container.innerHTML =
+            '<p class="muted">No se pudieron cargar los participantes.</p>';
+    } finally {
+        button.disabled = false;
+    }
+}
+
+
+document
+    .getElementById("refreshParticipantsButton")
+    .addEventListener("click", loadParticipants);

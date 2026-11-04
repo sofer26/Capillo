@@ -136,6 +136,29 @@
       border-color: #3b82f6;
       color: #60a5fa;
     }
+    /* Número seleccionado temporalmente */
+.number.selected {
+  background: #00e5ff;
+  border: 2px solid #ffffff;
+  color: #07111b;
+  box-shadow: 0 0 15px #00e5ff99;
+  transform: scale(1.05);
+}
+
+.number.available {
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.number.available:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 12px #10b98166;
+}
+
+.number.reserved,
+.number.paid {
+  cursor: not-allowed;
+}
 
     .legend {
       display: flex;
@@ -281,9 +304,38 @@
         <span class="paid">Pagado</span>
       </div>
 
-      <div id="numbersGrid" class="grid-numbers"></div>
+     
+<div id="numbersGrid" class="grid-numbers"></div>
 
-      <p id="message" role="status" aria-live="polite">
+<div class="section" style="margin-top:22px">
+  <h2>Mi selección de demostración</h2>
+
+  <p class="muted">
+    Números seleccionados:
+    <strong id="selectedCount">0</strong>
+  </p>
+
+  <p class="muted">
+    Importe simulado:
+    <strong id="selectedTotal">S/ 0.00</strong>
+  </p>
+
+  <p class="muted" id="selectedList">
+    Todavía no has seleccionado números.
+  </p>
+
+  <button id="clearSelectionButton" type="button">
+    Limpiar selección
+  </button>
+
+  <p class="muted">
+    Esta selección es temporal. No constituye una reserva
+    ni una participación real.
+  </p>
+</div>
+
+<p id="message" role="status" aria-live="polite">
+
         Cargando números...
       </p>
     </section>

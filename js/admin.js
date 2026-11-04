@@ -335,24 +335,33 @@ async function loadParticipants() {
             const formattedNumbers = numbers.length
                 ? numbers.map(n => String(n).padStart(2, "0")).join(", ")
                 : "Sin números";
+              const total = numbers.length * 10;
 
+              const formattedTotal = `S/ ${total.toFixed(2)}`;
             const status =
                 reservations.length > 0
                     ? reservations[0].status
                     : "sin reserva";
 
-            card.innerHTML = `
-                <strong>${participant.full_name}</strong>
-                <div style="margin-top:6px">
-                    WhatsApp: ${participant.whatsapp}
-                </div>
-                <div style="margin-top:6px">
-                    Números: <strong>${formattedNumbers}</strong>
-                </div>
-                <div style="margin-top:6px">
-                    Estado: <strong>${status}</strong>
-                </div>
-            `;
+          card.innerHTML = `
+    <strong>${participant.full_name}</strong>
+
+    <div style="margin-top:6px">
+        WhatsApp: ${participant.whatsapp}
+    </div>
+
+    <div style="margin-top:6px">
+        Números: <strong>${formattedNumbers}</strong>
+    </div>
+
+    <div style="margin-top:6px">
+        Total simulado: <strong>${formattedTotal}</strong>
+    </div>
+
+    <div style="margin-top:6px">
+        Estado: <strong>${status}</strong>
+    </div>
+`;
 
             container.appendChild(card);
         });

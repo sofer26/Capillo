@@ -20,7 +20,6 @@ function showLogin() {
 function showPanel(email) {
   loginSection.classList.add("hidden");
   panelSection.classList.remove("hidden");
-
   document.getElementById("adminEmail").textContent =
     "Sesión: " + email;
 }
@@ -31,21 +30,18 @@ async function verifyAdmin(user) {
   if (error || data !== true) {
     await client.auth.signOut();
     showLogin();
-    alert("Acceso denegado: administrador no autorizado.");
-    return false;
+    showMessage("Acceso denegado: administrador no autorizado.", "#fca5a5");
+    return;
   }
 
   showPanel(user.email);
   await loadNumbers();
-
-  return true;
 }
 
-// Consultar sorteo y números en Supabase
 async function loadNumbers() {
-  const refreshButton = document.getElementById("refreshButton");
+  const button = document.getElementById("refreshButton");
+  button.disabled = true;
 
-  refreshButton.disabled = true;
   showMessage("Consultando base de datos...");
 
   try {
@@ -57,7 +53,6 @@ async function loadNumbers() {
 
     if (raffleError) throw raffleError;
     if (!raffle) throw new Error("No se encontró el sorteo demo.");
-
     if (raffle.status !== "demo") {
       throw new Error("El sorteo no está en modo demostración.");
     }
@@ -83,11 +78,10 @@ async function loadNumbers() {
     showMessage("Error: " + error.message, "#fca5a5");
 
   } finally {
-    refreshButton.disabled = false;
+    button.disabled = false;
   }
 }
 
-// Dibujar cuadrícula y estadísticas
 function renderNumbers() {
   const counts = {
     available: 0,
@@ -96,7 +90,7 @@ function renderNumbers() {
   };
 
   currentNumbers.forEach(item => {
-    if (Object.hasOwn(counts, item.status)) {
+    if (Object.prototype.hasOwnProperty.call(counts, item.status)) {
       counts[item.status]++;
     }
   });
@@ -118,41 +112,37 @@ function renderNumbers() {
 
   grid.replaceChildren();
 
-  const filteredNumbers = currentNumbers.filter(item =>
+  const filtered = currentNumbers.filter(item =>
     filter === "all" || item.status === filter
   );
 
-  filteredNumbers.forEach(item => {
+  filtered.forEach(item => {
     const element = document.createElement("div");
 
     element.className = "number " + item.status;
     element.textContent = String(item.number).padStart(2, "0");
-    element.title = "Número " + item.number +
-      " - " + item.status;
+    element.title = "Número " + item.number + " - " + item.status;
 
     grid.appendChild(element);
   });
 
-  if (filteredNumbers.length === 0) {
+  if (filtered.length === 0) {
     const empty = document.createElement("p");
     empty.textContent = "No hay números en esta categoría.";
     grid.appendChild(empty);
   }
 }
 
-// Filtros
 document.getElementById("filter").addEventListener(
   "change",
   renderNumbers
 );
 
-// Actualizar datos
 document.getElementById("refreshButton").addEventListener(
   "click",
   loadNumbers
 );
 
-// Inicio de sesión
 document.getElementById("loginForm").addEventListener(
   "submit",
   async event => {
@@ -170,7 +160,10 @@ document.getElementById("loginForm").addEventListener(
     });
 
     if (error) {
-      showMessage("No se pudo iniciar sesión. Revisa tus credenciales.", "#fca5a5");
+      showMessage(
+        "No se pudo iniciar sesión. Revisa tus credenciales.",
+        "#fca5a5"
+      );
       button.disabled = false;
       return;
     }
@@ -180,7 +173,6 @@ document.getElementById("loginForm").addEventListener(
   }
 );
 
-// Cerrar sesión
 document.getElementById("logoutButton").addEventListener(
   "click",
   async () => {
@@ -197,7 +189,6 @@ document.getElementById("logoutButton").addEventListener(
   }
 );
 
-// Comprobar sesión existente
 async function initializeAdmin() {
   showLogin();
 

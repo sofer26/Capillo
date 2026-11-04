@@ -303,7 +303,35 @@ async function loadParticipants() {
             container.innerHTML = '<p class="muted">Todavía no hay participantes DEMO.</p>';
             return;
         }
+const totalParticipantsElement =
+    document.getElementById("totalParticipants");
 
+const totalSimulatedElement =
+    document.getElementById("totalSimulated");
+
+let totalSimulated = 0;
+
+data.forEach(participant => {
+    const reservations = participant.reservations || [];
+
+    reservations.forEach(reservation => {
+        if (reservation.status === "pending") {
+            const reservationNumbers =
+                reservation.reservation_numbers || [];
+
+            totalSimulated += reservationNumbers.length * 10;
+        }
+    });
+});
+
+if (totalParticipantsElement) {
+    totalParticipantsElement.textContent = data.length;
+}
+
+if (totalSimulatedElement) {
+    totalSimulatedElement.textContent =
+        `S/ ${totalSimulated.toFixed(2)}`;
+}
         container.innerHTML = "";
 
         data.forEach(participant => {

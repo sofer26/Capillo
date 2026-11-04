@@ -83,6 +83,68 @@
     <div class="status">
       MODO DEMOSTRACIÓN · NO HAY PARTICIPACIONES
     </div>
+    <section class="demo-raffle">
+  <h2>Selecciona tus números</h2>
+
+  <p class="demo-note">
+    Esta es una simulación. No se realizan pagos ni participaciones reales.
+  </p>
+
+  <div id="publicNumbersGrid" class="grid-numbers"></div>
+
+  <div class="selection-summary">
+    <h3>Tu selección</h3>
+
+    <p>
+      Números seleccionados:
+      <strong id="publicSelectedCount">0</strong>
+    </p>
+
+    <p>
+      Importe simulado:
+      <strong id="publicSelectedTotal">S/ 0.00</strong>
+    </p>
+
+    <p id="publicSelectedList">
+      Todavía no has seleccionado números.
+    </p>
+  </div>
+
+  <div class="participant-form">
+    <h3>Datos de demostración</h3>
+
+    <label for="publicFullName">Nombre completo</label>
+    <input
+      type="text"
+      id="publicFullName"
+      placeholder="Ej. Juan Demo"
+      autocomplete="name"
+    >
+
+    <label for="publicWhatsapp">WhatsApp</label>
+    <input
+      type="tel"
+      id="publicWhatsapp"
+      placeholder="Ej. 999999999"
+      autocomplete="tel"
+    >
+
+    <button id="publicSubmitButton" type="button">
+      Simular participación
+    </button>
+
+    <button id="publicClearButton" type="button">
+      Limpiar selección
+    </button>
+  </div>
+
+  <div
+    id="publicMessage"
+    class="status"
+    role="status"
+    aria-live="polite"
+  ></div>
+</section>
   </main>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js"></script>

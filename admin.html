@@ -6,115 +6,298 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#080b16">
   <title>NEON DRAW | Administración</title>
+
   <style>
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       min-height: 100vh;
-      display: grid;
-      place-items: center;
-      padding: 20px;
       background: #080b16;
-      color: white;
+      color: #fff;
       font-family: Arial, sans-serif;
     }
-    .card {
-      width: 100%;
-      max-width: 420px;
-      padding: 30px;
-      background: #111827;
-      border: 1px solid #26334d;
-      border-radius: 18px;
-      box-shadow: 0 0 30px #00e5ff12;
+
+    .container {
+      width: min(1100px, 94%);
+      margin: 35px auto;
     }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+      margin-bottom: 30px;
+    }
+
     .logo {
       color: #00e5ff;
-      text-align: center;
       letter-spacing: 5px;
       font-weight: bold;
     }
-    h1 { text-align: center; font-size: 25px; }
-    p { color: #aab6ca; text-align: center; line-height: 1.5; }
-    label { display: block; margin: 18px 0 7px; color: #cbd5e1; }
-    input {
-      width: 100%;
-      padding: 13px;
-      border-radius: 9px;
-      border: 1px solid #334155;
-      background: #080b16;
-      color: white;
-      font-size: 16px;
+
+    .demo {
+      color: #00e5ff;
+      border: 1px solid #00e5ff66;
+      padding: 7px 12px;
+      border-radius: 20px;
+      font-size: 12px;
     }
-    button {
-      width: 100%;
-      margin-top: 22px;
-      padding: 14px;
-      border: 0;
+
+    h1 { font-size: 27px; }
+    h2 { font-size: 20px; }
+
+    .muted { color: #aab6ca; }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin: 25px 0;
+    }
+
+    .card, .section {
+      background: #111827;
+      border: 1px solid #26334d;
+      border-radius: 14px;
+      padding: 20px;
+    }
+
+    .number-stat {
+      font-size: 30px;
+      font-weight: bold;
+      margin: 12px 0 5px;
+    }
+
+    .available { color: #34d399; }
+    .reserved { color: #fbbf24; }
+    .paid { color: #60a5fa; }
+
+    .toolbar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin: 20px 0;
+    }
+
+    select, button {
+      border: 1px solid #334155;
       border-radius: 9px;
+      padding: 12px 15px;
+      background: #1e293b;
+      color: white;
+      font-size: 14px;
+    }
+
+    button {
+      cursor: pointer;
       background: #00d9f5;
       color: #07111b;
       font-weight: bold;
-      cursor: pointer;
+      border: none;
     }
-    button:disabled { opacity: .6; cursor: wait; }
+
+    button:disabled { opacity: .5; cursor: wait; }
+
+    .grid-numbers {
+      display: grid;
+      grid-template-columns: repeat(10, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 22px;
+    }
+
+    .number {
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      border: 1px solid;
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    .number.available {
+      background: #064e3b33;
+      border-color: #10b981;
+      color: #34d399;
+    }
+
+    .number.reserved {
+      background: #78350f33;
+      border-color: #f59e0b;
+      color: #fbbf24;
+    }
+
+    .number.paid {
+      background: #1e3a8a44;
+      border-color: #3b82f6;
+      color: #60a5fa;
+    }
+
+    .legend {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+      margin-top: 18px;
+      font-size: 13px;
+      color: #cbd5e1;
+    }
+
+    .legend span::before {
+      content: "";
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: currentColor;
+      margin-right: 7px;
+    }
+
     #message {
-      min-height: 24px;
-      margin-top: 16px;
-      font-size: 14px;
-      text-align: center;
+      color: #00e5ff;
+      margin: 15px 0;
       overflow-wrap: anywhere;
     }
-    .panel { display: none; }
-    .panel button { background: #26334d; color: white; }
-    .status {
-      padding: 14px;
-      border: 1px solid #00e5ff55;
-      border-radius: 10px;
-      color: #00e5ff;
-      text-align: center;
+
+    .logout {
+      background: #26334d;
+      color: white;
     }
+
+    .login {
+      max-width: 420px;
+      margin: 70px auto;
+      padding: 30px;
+      background: #111827;
+      border: 1px solid #26334d;
+      border-radius: 16px;
+    }
+
+    .login input {
+      width: 100%;
+      padding: 13px;
+      margin: 8px 0 15px;
+      border-radius: 8px;
+      background: #080b16;
+      border: 1px solid #334155;
+      color: white;
+    }
+
+    .login button { width: 100%; }
+
+    .hidden { display: none !important; }
+
     a { color: #00e5ff; }
+
+    @media(max-width: 650px) {
+      .cards { grid-template-columns: repeat(2, 1fr); }
+      .grid-numbers { grid-template-columns: repeat(5, 1fr); }
+      .number { font-size: 17px; }
+      .container { margin: 20px auto; }
+    }
   </style>
 </head>
+
 <body>
-  <main class="card">
+
+  <section class="login" id="login">
     <div class="logo">NEON DRAW</div>
+    <h1>Panel administrativo</h1>
+    <p class="muted">Acceso exclusivo para administradores.</p>
 
-    <section id="login">
-      <h1>Panel administrativo</h1>
-      <p>Acceso exclusivo para administradores autorizados.</p>
+    <form id="loginForm">
+      <label for="email">Correo electrónico</label>
+      <input id="email" type="email" required autocomplete="username">
 
-      <form id="loginForm">
-        <label for="email">Correo electrónico</label>
-        <input id="email" type="email" autocomplete="username"
-               required>
+      <label for="password">Contraseña</label>
+      <input id="password" type="password" required
+             autocomplete="current-password">
 
-        <label for="password">Contraseña</label>
-        <input id="password" type="password"
-               autocomplete="current-password" required>
+      <button id="loginButton" type="submit">Iniciar sesión</button>
+    </form>
+  </section>
 
-        <button id="loginButton" type="submit">
-          Iniciar sesión
-        </button>
-      </form>
+  <main class="container hidden" id="panel">
+
+    <header class="header">
+      <div>
+        <div class="logo">NEON DRAW</div>
+        <p class="muted">Panel de administración</p>
+      </div>
+      <div>
+        <span class="demo">MODO DEMOSTRACIÓN</span>
+        <button class="logout" id="logoutButton">Salir</button>
+      </div>
+    </header>
+
+    <h1>Gestión de números</h1>
+    <p class="muted">Sorteo: NEON DRAW - DEMO</p>
+    <p class="muted" id="adminEmail"></p>
+
+    <section class="cards">
+      <div class="card">
+        <div class="muted">Total</div>
+        <div class="number-stat" id="total">0</div>
+        <small class="muted">Números</small>
+      </div>
+
+      <div class="card">
+        <div class="muted">Disponibles</div>
+        <div class="number-stat available" id="available">0</div>
+        <small class="muted">Libres</small>
+      </div>
+
+      <div class="card">
+        <div class="muted">Reservados</div>
+        <div class="number-stat reserved" id="reserved">0</div>
+        <small class="muted">En reserva</small>
+      </div>
+
+      <div class="card">
+        <div class="muted">Pagados</div>
+        <div class="number-stat paid" id="paid">0</div>
+        <small class="muted">Confirmados</small>
+      </div>
     </section>
 
-    <section id="panel" class="panel">
-      <h1>¡Bienvenido!</h1>
-      <div class="status">Administrador verificado</div>
-      <p id="adminEmail"></p>
-      <p>NEON DRAW está en modo demostración.</p>
-      <button id="logoutButton" type="button">
-        Cerrar sesión
-      </button>
+    <section class="section">
+      <div class="toolbar">
+        <h2 style="margin:0">Números del sorteo</h2>
+        <select id="filter">
+          <option value="all">Todos los números</option>
+          <option value="available">Disponibles</option>
+          <option value="reserved">Reservados</option>
+          <option value="paid">Pagados</option>
+        </select>
+        <button id="refreshButton">Actualizar datos</button>
+      </div>
+
+      <div class="legend">
+        <span class="available">Disponible</span>
+        <span class="reserved">Reservado</span>
+        <span class="paid">Pagado</span>
+      </div>
+
+      <div id="numbersGrid" class="grid-numbers"></div>
+
+      <p id="message" role="status" aria-live="polite">
+        Cargando números...
+      </p>
     </section>
 
-    <div id="message" role="status" aria-live="polite"></div>
-    <p><a href="./">Volver a la página principal</a></p>
+    <p class="muted">
+      NEON DRAW · Versión de demostración · Sin cobros ni participaciones reales.
+    </p>
+
+    <a href="./">Volver a la página principal</a>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/supabase.js"></script>
   <script src="js/admin.js"></script>
+
 </body>
 </html>

@@ -1,11 +1,11 @@
 
-// NEON DRAW - Administración y gestión de números
-
 const client = window.supabaseClient;
 
 const loginSection = document.getElementById("login");
 const panelSection = document.getElementById("panel");
 const message = document.getElementById("message");
+
+let currentNumbers = [];
 
 function showMessage(text, color = "#00e5ff") {
   message.textContent = text;
@@ -20,6 +20,7 @@ function showLogin() {
 function showPanel(email) {
   loginSection.classList.add("hidden");
   panelSection.classList.remove("hidden");
+
   document.getElementById("adminEmail").textContent =
     "Sesión: " + email;
 }
@@ -36,15 +37,16 @@ async function verifyAdmin(user) {
 
   showPanel(user.email);
   await loadNumbers();
+
   return true;
 }
 
-// Obtener sorteo de demostración y sus números
+// Consultar sorteo y números en Supabase
 async function loadNumbers() {
-  showMessage("Consultando base de datos...");
-
   const refreshButton = document.getElementById("refreshButton");
+
   refreshButton.disabled = true;
+  showMessage("Consultando base de datos...");
 
   try {
     const { data: raffle, error: raffleError } = await client
@@ -68,7 +70,8 @@ async function loadNumbers() {
 
     if (numbersError) throw numbersError;
 
-    renderNumbers(numbers || []);
+    currentNumbers = numbers || [];
+    renderNumbers();
 
     showMessage(
       "Datos actualizados desde Supabase correctamente.",
@@ -78,70 +81,72 @@ async function loadNumbers() {
   } catch (error) {
     console.error("Error consultando números:", error);
     showMessage("Error: " + error.message, "#fca5a5");
+
   } finally {
     refreshButton.disabled = false;
   }
 }
 
-// Mostrar estadísticas y cuadrícula
-function renderNumbers(numbers) {
+// Dibujar cuadrícula y estadísticas
+function renderNumbers() {
   const counts = {
     available: 0,
     reserved: 0,
     paid: 0
   };
 
-  numbers.forEach(item => {
+  currentNumbers.forEach(item => {
     if (Object.hasOwn(counts, item.status)) {
       counts[item.status]++;
     }
   });
 
-  document.getElementById("total").textContent = numbers.length;
-  document.getElementById("available").textContent = counts.available;
-  document.getElementById("reserved").textContent = counts.reserved;
-  document.getElementById("paid").textContent = counts.paid;
+  document.getElementById("total").textContent =
+    currentNumbers.length;
+
+  document.getElementById("available").textContent =
+    counts.available;
+
+  document.getElementById("reserved").textContent =
+    counts.reserved;
+
+  document.getElementById("paid").textContent =
+    counts.paid;
 
   const filter = document.getElementById("filter").value;
   const grid = document.getElementById("numbersGrid");
 
   grid.replaceChildren();
 
-  const filtered = numbers.filter(item =>
+  const filteredNumbers = currentNumbers.filter(item =>
     filter === "all" || item.status === filter
   );
 
-  filtered.forEach(item => {
+  filteredNumbers.forEach(item => {
     const element = document.createElement("div");
+
     element.className = "number " + item.status;
     element.textContent = String(item.number).padStart(2, "0");
-    element.title =
-      "Número " + item.number + " - " + item.status;
+    element.title = "Número " + item.number +
+      " - " + item.status;
+
     grid.appendChild(element);
   });
 
-  if (filtered.length === 0) {
+  if (filteredNumbers.length === 0) {
     const empty = document.createElement("p");
     empty.textContent = "No hay números en esta categoría.";
     grid.appendChild(empty);
   }
 }
 
-// Obtener datos actuales para filtrar sin volver a consultar
-let currentNumbers = [];
+// Filtros
+document.getElementById("filter").addEventListener(
+  "change",
+  renderNumbers
+);
 
-const originalRenderNumbers = renderNumbers;
-
-function renderNumbers(numbers) {
-  currentNumbers = numbers;
-  originalRenderNumbers(numbers);
-}
-
-document.getElementById("filter").addEventListener("change", () => {
-  originalRenderNumbers(currentNumbers);
-});
-
-// Actualizar
+// Actualizar datos
 document.getElementById("refreshButton").addEventListener(
   "click",
   loadNumbers
@@ -165,7 +170,7 @@ document.getElementById("loginForm").addEventListener(
     });
 
     if (error) {
-      alert("No se pudo iniciar sesión. Revisa tus credenciales.");
+      showMessage("No se pudo iniciar sesión. Revisa tus credenciales.", "#fca5a5");
       button.disabled = false;
       return;
     }
@@ -182,23 +187,29 @@ document.getElementById("logoutButton").addEventListener(
     const { error } = await client.auth.signOut();
 
     if (error) {
-      alert("No se pudo cerrar la sesión.");
+      showMessage("No se pudo cerrar la sesión.", "#fca5a5");
       return;
     }
 
+    currentNumbers = [];
     showLogin();
     document.getElementById("loginForm").reset();
   }
 );
 
-// Inicialización
+// Comprobar sesión existente
 async function initializeAdmin() {
   showLogin();
+
+  if (!client) {
+    showMessage("No se pudo conectar con Supabase.", "#fca5a5");
+    return;
+  }
 
   const { data, error } = await client.auth.getSession();
 
   if (error) {
-    alert("No se pudo consultar la sesión.");
+    showMessage("No se pudo consultar la sesión.", "#fca5a5");
     return;
   }
 

@@ -87,60 +87,99 @@ async function loadNumbers() {
 }
 
 function renderNumbers() {
-  const counts = {
-    available: 0,
-    reserved: 0,
-    paid: 0
-  };
+    const counts = {
+        available: 0,
+        reserved: 0,
+        paid: 0
+    };
 
-  currentNumbers.forEach(item => {
-    if (Object.prototype.hasOwnProperty.call(counts, item.status)) {
-      counts[item.status]++;
+    currentNumbers.forEach(item => {
+        if (Object.prototype.hasOwnProperty.call(counts, item.status)) {
+            counts[item.status]++;
+        }
+    });
+
+    document.getElementById("total").textContent = currentNumbers.length;
+    document.getElementById("available").textContent = counts.available;
+    document.getElementById("reserved").textContent = counts.reserved;
+    document.getElementById("paid").textContent = counts.paid;
+
+    const filter = document.getElementById("filter").value;
+    const grid = document.getElementById("numbersGrid");
+
+    grid.replaceChildren();
+
+    const filtered = currentNumbers.filter(item =>
+        filter === "all" || item.status === filter
+    );
+
+    filtered.forEach(item => {
+        const element = document.createElement("button");
+        const isSelected = selectedNumbers.has(item.number);
+
+        element.type = "button";
+        element.className = "number " + item.status + (isSelected ? " selected" : "");
+        element.textContent = String(item.number).padStart(2, "0");
+        element.dataset.number = item.number;
+        element.disabled = item.status !== "available";
+
+        element.title = "Número " + item.number +
+            " - " + (isSelected ? "Seleccionado" : item.status);
+
+        grid.appendChild(element);
+    });
+
+    if (filtered.length === 0) {
+        const empty = document.createElement("p");
+        empty.textContent = "No hay números en esta categoría.";
+        grid.appendChild(empty);
     }
-  });
 
-  document.getElementById("total").textContent =
-    currentNumbers.length;
+    updateSelectionSummary();
+}
 
-  document.getElementById("available").textContent =
-    counts.available;
+function updateSelectionSummary() {
+    const selected = [...selectedNumbers].sort((a, b) => a - b);
 
-  document.getElementById("reserved").textContent =
-    counts.reserved;
+    document.getElementById("selectedCount").textContent = selected.length;
 
-  document.getElementById("paid").textContent =
-    counts.paid;
+    document.getElementById("selectedTotal").textContent =
+        "S/ " + (selected.length * DEMO_PRICE).toFixed(2);
 
-  const filter = document.getElementById("filter").value;
-  const grid = document.getElementById("numbersGrid");
-
-  grid.replaceChildren();
-
-  const filtered = currentNumbers.filter(item =>
-    filter === "all" || item.status === filter
-  );
-
-  filtered.forEach(item => {
-    const element = document.createElement("div");
-
-    element.className = "number " + item.status;
-    element.textContent = String(item.number).padStart(2, "0");
-    element.title = "Número " + item.number + " - " + item.status;
-
-    grid.appendChild(element);
-  });
-
-  if (filtered.length === 0) {
-    const empty = document.createElement("p");
-    empty.textContent = "No hay números en esta categoría.";
-    grid.appendChild(empty);
-  }
+    document.getElementById("selectedList").textContent =
+        selected.length
+            ? "Números: " + selected.map(n => String(n).padStart(2, "0")).join(", ")
+            : "Todavía no has seleccionado números.";
 }
 
 document.getElementById("filter").addEventListener(
   "change",
   renderNumbers
 );
+document.getElementById("numbersGrid").addEventListener("click", event => {
+    const button = event.target.closest("button[data-number]");
+
+    if (!button || button.disabled) return;
+
+    const number = Number(button.dataset.number);
+
+    const record = currentNumbers.find(item => item.number === number);
+
+    if (!record || record.status !== "available") return;
+
+    if (selectedNumbers.has(number)) {
+        selectedNumbers.delete(number);
+    } else {
+        selectedNumbers.add(number);
+    }
+
+    renderNumbers();
+});
+
+document.getElementById("clearSelectionButton").addEventListener("click", () => {
+    selectedNumbers.clear();
+    renderNumbers();
+});
 
 document.getElementById("refreshButton").addEventListener(
   "click",

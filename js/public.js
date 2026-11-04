@@ -74,7 +74,7 @@ async function loadPublicNumbers() {
         const { data: raffle, error: raffleError } = await client
             .from("raffles")
             .select("id, name, status, price_per_number")
-            .eq("name", "NEON DRAW - DEMO")
+            .eq("name", "NEON DRAW - PRUEBA")
             .maybeSingle();
 
         if (raffleError) throw raffleError;
@@ -83,9 +83,9 @@ async function loadPublicNumbers() {
             throw new Error("No se encontró el sorteo DEMO.");
         }
 
-        if (raffle.status !== "demo") {
-            throw new Error("El sorteo no está disponible en modo demostración.");
-        }
+       if (raffle.status !== "active") {
+    throw new Error("El sorteo no está disponible para pruebas.");
+}
 
         raffleId = raffle.id;
         demoPrice = Number(raffle.price_per_number);
@@ -102,10 +102,10 @@ async function loadPublicNumbers() {
 
         renderPublicNumbers();
 
-        showPublicMessage(
-            "Selecciona tus números de demostración.",
-            "#34d399"
-        );
+       showPublicMessage(
+    "Selecciona tus números para participar en la prueba.",
+    "#34d399"
+);
 
     } catch (error) {
         console.error("Error cargando números:", error);
@@ -183,7 +183,7 @@ document
 
         if (!fullName) {
             showPublicMessage(
-                "Ingresa un nombre de demostración.",
+                "Ingresa un nombre.",
                 "#fca5a5"
             );
             return;
@@ -191,7 +191,7 @@ document
 
         if (!whatsapp) {
             showPublicMessage(
-                "Ingresa un WhatsApp de demostración.",
+                "Ingresa un WhatsApp.",
                 "#fca5a5"
             );
             return;
@@ -203,7 +203,7 @@ document
         button.disabled = true;
 
         showPublicMessage(
-            "Registrando simulación..."
+            "Registrando participación..."
         );
 
         try {
@@ -226,11 +226,11 @@ document
             );
 
             showPublicMessage(
-                "¡Simulación registrada correctamente! Números: " +
+               "¡Participación registrada correctamente! Números: " +
                 selectedNumbers
                     .map(n => String(n).padStart(2, "0"))
                     .join(", ") +
-                " · Total simulado: S/ " +
+                " · Total de prueba: S/ " +
                 Number(data.total).toFixed(2),
                 "#34d399"
             );

@@ -66,6 +66,139 @@
       color: #00e5ff;
       font-size: 13px;
     }
+.demo-raffle {
+  margin-top: 30px;
+  padding: 24px;
+  border: 1px solid #00e5ff55;
+  border-radius: 18px;
+  background: #07111bcc;
+  box-shadow: 0 0 25px #00e5ff18;
+  text-align: left;
+}
+
+.demo-raffle h2 {
+  margin-top: 0;
+  color: #00e5ff;
+  text-align: center;
+}
+
+.demo-note {
+  color: #94a3b8;
+  text-align: center;
+  font-size: 14px;
+}
+
+.grid-numbers {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.number {
+  min-height: 48px;
+  border-radius: 10px;
+  border: 1px solid #334155;
+  background: #111827;
+  color: #e2e8f0;
+  font-weight: 700;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.number.available:hover {
+  transform: translateY(-3px);
+  border-color: #10b981;
+  box-shadow: 0 0 12px #10b98166;
+}
+
+.number.selected {
+  background: #00e5ff;
+  border: 2px solid #ffffff;
+  color: #07111b;
+  box-shadow: 0 0 15px #00e5ff99;
+  transform: scale(1.05);
+}
+
+.number.reserved,
+.number.paid {
+  background: #1e293b;
+  color: #64748b;
+  border-color: #334155;
+  cursor: not-allowed;
+  opacity: .6;
+}
+
+.selection-summary {
+  margin-top: 24px;
+  padding: 18px;
+  border-radius: 14px;
+  background: #020617;
+  border: 1px solid #1e293b;
+}
+
+.selection-summary h3,
+.participant-form h3 {
+  color: #00e5ff;
+}
+
+.participant-form {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.participant-form label {
+  color: #cbd5e1;
+  font-size: 14px;
+}
+
+.participant-form input {
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 15px;
+}
+
+.participant-form input:focus {
+  outline: none;
+  border-color: #00e5ff;
+  box-shadow: 0 0 10px #00e5ff33;
+}
+
+.participant-form button {
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #00e5ff;
+  color: #07111b;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.participant-form button:hover {
+  box-shadow: 0 0 15px #00e5ff66;
+}
+
+@media (max-width: 600px) {
+  .demo-raffle {
+    padding: 16px;
+  }
+
+  .grid-numbers {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 7px;
+  }
+
+  .number {
+    min-height: 42px;
+    font-size: 13px;
+  }
+}
+    
   </style>
 </head>
 

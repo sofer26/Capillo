@@ -7,6 +7,10 @@ const message = document.getElementById("message");
 
 let currentNumbers = [];
 
+// Selección temporal: no se guarda en Supabase
+const selectedNumbers = new Set();
+const DEMO_PRICE = 10;
+
 function showMessage(text, color = "#00e5ff") {
   message.textContent = text;
   message.style.color = color;

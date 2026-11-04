@@ -1,59 +1,160 @@
 
-// NEON DRAW - Autenticación de administrador
+// NEON DRAW - Administración y gestión de números
 
 const client = window.supabaseClient;
 
 const loginSection = document.getElementById("login");
 const panelSection = document.getElementById("panel");
 const message = document.getElementById("message");
-const loginButton = document.getElementById("loginButton");
 
-function showMessage(text, color = "#fca5a5") {
+function showMessage(text, color = "#00e5ff") {
   message.textContent = text;
   message.style.color = color;
 }
 
 function showLogin() {
-  loginSection.style.display = "block";
-  panelSection.style.display = "none";
+  loginSection.classList.remove("hidden");
+  panelSection.classList.add("hidden");
 }
 
 function showPanel(email) {
-  loginSection.style.display = "none";
-  panelSection.style.display = "block";
+  loginSection.classList.add("hidden");
+  panelSection.classList.remove("hidden");
   document.getElementById("adminEmail").textContent =
     "Sesión: " + email;
-  showMessage("Acceso autorizado.", "#34d399");
 }
 
 async function verifyAdmin(user) {
   const { data, error } = await client.rpc("is_admin");
 
-  if (error) {
+  if (error || data !== true) {
     await client.auth.signOut();
     showLogin();
-    showMessage("No se pudo verificar el permiso de administrador.");
-    return;
-  }
-
-  if (data !== true) {
-    await client.auth.signOut();
-    showLogin();
-    showMessage("Tu cuenta no tiene permisos de administrador.");
-    return;
+    alert("Acceso denegado: administrador no autorizado.");
+    return false;
   }
 
   showPanel(user.email);
+  await loadNumbers();
+  return true;
 }
 
-// Iniciar sesión
+// Obtener sorteo de demostración y sus números
+async function loadNumbers() {
+  showMessage("Consultando base de datos...");
+
+  const refreshButton = document.getElementById("refreshButton");
+  refreshButton.disabled = true;
+
+  try {
+    const { data: raffle, error: raffleError } = await client
+      .from("raffles")
+      .select("id, name, status, total_numbers")
+      .eq("name", "NEON DRAW - DEMO")
+      .maybeSingle();
+
+    if (raffleError) throw raffleError;
+    if (!raffle) throw new Error("No se encontró el sorteo demo.");
+
+    if (raffle.status !== "demo") {
+      throw new Error("El sorteo no está en modo demostración.");
+    }
+
+    const { data: numbers, error: numbersError } = await client
+      .from("raffle_numbers")
+      .select("number, status")
+      .eq("raffle_id", raffle.id)
+      .order("number", { ascending: true });
+
+    if (numbersError) throw numbersError;
+
+    renderNumbers(numbers || []);
+
+    showMessage(
+      "Datos actualizados desde Supabase correctamente.",
+      "#34d399"
+    );
+
+  } catch (error) {
+    console.error("Error consultando números:", error);
+    showMessage("Error: " + error.message, "#fca5a5");
+  } finally {
+    refreshButton.disabled = false;
+  }
+}
+
+// Mostrar estadísticas y cuadrícula
+function renderNumbers(numbers) {
+  const counts = {
+    available: 0,
+    reserved: 0,
+    paid: 0
+  };
+
+  numbers.forEach(item => {
+    if (Object.hasOwn(counts, item.status)) {
+      counts[item.status]++;
+    }
+  });
+
+  document.getElementById("total").textContent = numbers.length;
+  document.getElementById("available").textContent = counts.available;
+  document.getElementById("reserved").textContent = counts.reserved;
+  document.getElementById("paid").textContent = counts.paid;
+
+  const filter = document.getElementById("filter").value;
+  const grid = document.getElementById("numbersGrid");
+
+  grid.replaceChildren();
+
+  const filtered = numbers.filter(item =>
+    filter === "all" || item.status === filter
+  );
+
+  filtered.forEach(item => {
+    const element = document.createElement("div");
+    element.className = "number " + item.status;
+    element.textContent = String(item.number).padStart(2, "0");
+    element.title =
+      "Número " + item.number + " - " + item.status;
+    grid.appendChild(element);
+  });
+
+  if (filtered.length === 0) {
+    const empty = document.createElement("p");
+    empty.textContent = "No hay números en esta categoría.";
+    grid.appendChild(empty);
+  }
+}
+
+// Obtener datos actuales para filtrar sin volver a consultar
+let currentNumbers = [];
+
+const originalRenderNumbers = renderNumbers;
+
+function renderNumbers(numbers) {
+  currentNumbers = numbers;
+  originalRenderNumbers(numbers);
+}
+
+document.getElementById("filter").addEventListener("change", () => {
+  originalRenderNumbers(currentNumbers);
+});
+
+// Actualizar
+document.getElementById("refreshButton").addEventListener(
+  "click",
+  loadNumbers
+);
+
+// Inicio de sesión
 document.getElementById("loginForm").addEventListener(
   "submit",
-  async (event) => {
+  async event => {
     event.preventDefault();
 
-    loginButton.disabled = true;
-    showMessage("Verificando acceso...", "#00e5ff");
+    const button = document.getElementById("loginButton");
+    button.disabled = true;
 
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
@@ -64,13 +165,13 @@ document.getElementById("loginForm").addEventListener(
     });
 
     if (error) {
-      showMessage("No se pudo iniciar sesión. Revisa tus credenciales.");
-      loginButton.disabled = false;
+      alert("No se pudo iniciar sesión. Revisa tus credenciales.");
+      button.disabled = false;
       return;
     }
 
     await verifyAdmin(data.user);
-    loginButton.disabled = false;
+    button.disabled = false;
   }
 );
 
@@ -81,24 +182,23 @@ document.getElementById("logoutButton").addEventListener(
     const { error } = await client.auth.signOut();
 
     if (error) {
-      showMessage("No se pudo cerrar la sesión.");
+      alert("No se pudo cerrar la sesión.");
       return;
     }
 
     showLogin();
     document.getElementById("loginForm").reset();
-    showMessage("Sesión cerrada correctamente.", "#34d399");
   }
 );
 
-// Revisar si ya existe una sesión
+// Inicialización
 async function initializeAdmin() {
   showLogin();
 
   const { data, error } = await client.auth.getSession();
 
   if (error) {
-    showMessage("No se pudo consultar la sesión.");
+    alert("No se pudo consultar la sesión.");
     return;
   }
 

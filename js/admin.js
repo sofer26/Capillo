@@ -343,7 +343,7 @@ async function loadParticipants() {
                     ? reservations[0].status
                     : "sin reserva";
 
-          card.innerHTML = `
+       card.innerHTML = `
     <strong>${participant.full_name}</strong>
 
     <div style="margin-top:6px">
@@ -362,6 +362,70 @@ async function loadParticipants() {
         Estado: <strong>${status}</strong>
     </div>
 `;
+
+const pendingReservation = reservations.find(
+    reservation => reservation.status === "pending"
+);
+
+if (pendingReservation) {
+    const releaseButton = document.createElement("button");
+
+    releaseButton.type = "button";
+    releaseButton.textContent = "Liberar reserva";
+    releaseButton.style.marginTop = "12px";
+
+    releaseButton.addEventListener("click", async () => {
+
+        const confirmed = confirm(
+            `¿Liberar los números ${formattedNumbers}?`
+        );
+
+        if (!confirmed) return;
+
+        releaseButton.disabled = true;
+        releaseButton.textContent = "Liberando...";
+
+        try {
+
+            const { data, error } = await client.rpc(
+                "demo_cancel_reservation",
+                {
+                    p_reservation_id: pendingReservation.id
+                }
+            );
+
+            if (error) throw error;
+
+            console.log("Reserva liberada:", data);
+
+            alert(
+                `Reserva liberada correctamente.\n\n` +
+                `Números disponibles nuevamente: ${formattedNumbers}`
+            );
+
+            await loadParticipants();
+
+            await loadNumbers();
+
+        } catch (error) {
+
+            console.error(
+                "Error liberando reserva:",
+                error
+            );
+
+            alert(
+                "No se pudo liberar la reserva.\n\n" +
+                error.message
+            );
+
+            releaseButton.disabled = false;
+            releaseButton.textContent = "Liberar reserva";
+        }
+    });
+
+    card.appendChild(releaseButton);
+}
 
             container.appendChild(card);
         });

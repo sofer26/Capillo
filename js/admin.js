@@ -326,11 +326,13 @@ data.forEach(participant => {
 
 if (totalParticipantsElement) {
     totalParticipantsElement.textContent = data.length;
+  console.log("PARTICIPANTES:", data.length);
 }
 
 if (totalSimulatedElement) {
     totalSimulatedElement.textContent =
         `S/ ${totalSimulated.toFixed(2)}`;
+  console.log("TOTAL SIMULADO:", totalSimulated);
 }
         container.innerHTML = "";
 

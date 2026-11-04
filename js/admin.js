@@ -69,9 +69,21 @@ async function loadNumbers() {
 
     if (numbersError) throw numbersError;
 
-    currentNumbers = numbers || [];
-    renderNumbers();
+  currentNumbers = numbers || [];
 
+const availableNumbers = new Set(
+    currentNumbers
+        .filter(item => item.status === "available")
+        .map(item => item.number)
+);
+
+for (const number of selectedNumbers) {
+    if (!availableNumbers.has(number)) {
+        selectedNumbers.delete(number);
+    }
+}
+
+renderNumbers();
     showMessage(
       "Datos actualizados desde Supabase correctamente.",
       "#34d399"

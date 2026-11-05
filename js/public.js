@@ -37,7 +37,6 @@ function renderPublicNumbers() {
 
     publicNumbers.forEach(item => {
         const button = document.createElement("button");
-
         const selected = publicSelectedNumbers.has(item.number);
 
         button.type = "button";
@@ -67,10 +66,10 @@ function renderPublicNumbers() {
 }
 
 /* =========================================================
-   TICKET DEL CLIENTE
+   MOSTRAR TICKET
 ========================================================= */
 
-function showTicket(data, selectedNumbers) {
+function showTicket(data, selectedNumbers, whatsapp) {
     let ticketBox = document.getElementById("publicTicketBox");
 
     if (!ticketBox) {
@@ -79,17 +78,22 @@ function showTicket(data, selectedNumbers) {
 
         ticketBox.style.marginTop = "25px";
         ticketBox.style.padding = "25px";
-        ticketBox.style.border = "1px solid rgba(0, 229, 255, 0.45)";
+        ticketBox.style.border =
+            "1px solid rgba(0, 229, 255, 0.45)";
         ticketBox.style.borderRadius = "18px";
         ticketBox.style.background =
             "linear-gradient(145deg, rgba(0,229,255,0.08), rgba(0,0,0,0.35))";
         ticketBox.style.boxShadow =
             "0 0 25px rgba(0,229,255,0.12)";
 
-        const form = document.querySelector(".participant-form");
+        const form =
+            document.querySelector(".participant-form");
 
         if (form) {
-            form.insertAdjacentElement("afterend", ticketBox);
+            form.insertAdjacentElement(
+                "afterend",
+                ticketBox
+            );
         } else {
             document.body.appendChild(ticketBox);
         }
@@ -173,6 +177,142 @@ function showTicket(data, selectedNumbers) {
 
             </div>
 
+            <!-- PAGO -->
+
+            <div style="
+                margin-top:20px;
+                padding:18px;
+                border-radius:14px;
+                background:rgba(34,197,94,.07);
+                border:1px solid rgba(34,197,94,.25);
+                text-align:left;
+            ">
+
+                <h3 style="
+                    margin-top:0;
+                    text-align:center;
+                ">
+                    💳 Realiza tu pago
+                </h3>
+
+                <p>
+                    <strong>Yape / Plin</strong>
+                </p>
+
+                <p>
+                    📱
+                    <strong style="
+                        font-size:20px;
+                        letter-spacing:1px;
+                    ">
+                        985416076
+                    </strong>
+                </p>
+
+                <p>
+                    👤 <strong>Ces* Alb*</strong>
+                </p>
+
+                <p>
+                    💰
+                    <strong>
+                        S/ ${Number(data.total).toFixed(2)}
+                    </strong>
+                </p>
+
+                <p style="
+                    font-size:13px;
+                    opacity:.75;
+                ">
+                    Realiza el pago por el monto exacto
+                    indicado arriba.
+                </p>
+
+            </div>
+
+            <!-- BOTÓN PAGO -->
+
+            <button
+                id="reportPaymentButton"
+                type="button"
+                style="
+                    margin-top:18px;
+                    width:100%;
+                    padding:14px;
+                    border:none;
+                    border-radius:10px;
+                    cursor:pointer;
+                    font-weight:800;
+                    font-size:15px;
+                "
+            >
+                💸 YA REALICÉ EL PAGO
+            </button>
+
+            <div
+                id="paymentForm"
+                style="
+                    display:none;
+                    margin-top:15px;
+                    text-align:left;
+                "
+            >
+
+                <label
+                    for="paymentReference"
+                    style="
+                        display:block;
+                        margin-bottom:7px;
+                        font-weight:600;
+                    "
+                >
+                    Número de operación
+                </label>
+
+                <input
+                    id="paymentReference"
+                    type="text"
+                    inputmode="numeric"
+                    autocomplete="off"
+                    placeholder="Ej. 123456789"
+                    style="
+                        width:100%;
+                        box-sizing:border-box;
+                        padding:12px;
+                        border-radius:9px;
+                        border:1px solid rgba(255,255,255,.2);
+                        background:rgba(0,0,0,.25);
+                        color:inherit;
+                    "
+                >
+
+                <button
+                    id="sendPaymentButton"
+                    type="button"
+                    style="
+                        margin-top:12px;
+                        width:100%;
+                        padding:13px;
+                        border:none;
+                        border-radius:10px;
+                        cursor:pointer;
+                        font-weight:700;
+                    "
+                >
+                    ENVIAR CONFIRMACIÓN
+                </button>
+
+                <div
+                    id="paymentMessage"
+                    style="
+                        margin-top:10px;
+                        text-align:center;
+                        font-size:14px;
+                    "
+                ></div>
+
+            </div>
+
             <div style="
                 margin-top:18px;
                 padding:15px;
@@ -191,8 +331,7 @@ function showTicket(data, selectedNumbers) {
                 ">
                     Guarda tu código
                     <strong>${data.ticket_code}</strong>.
-                    Lo necesitarás para identificar tu reserva
-                    y confirmar tu pago.
+                    Lo necesitarás para identificar tu reserva.
                 </p>
 
             </div>
@@ -221,16 +360,159 @@ function showTicket(data, selectedNumbers) {
         block: "center"
     });
 
+    /* Mostrar formulario */
+
     document
-        .getElementById("ticketNewReservationButton")
+        .getElementById("reportPaymentButton")
+        .addEventListener("click", () => {
+
+            const form =
+                document.getElementById("paymentForm");
+
+            form.style.display = "block";
+
+            document
+                .getElementById("paymentReference")
+                .focus();
+        });
+
+    /* Enviar pago */
+
+    document
+        .getElementById("sendPaymentButton")
+        .addEventListener(
+            "click",
+            async () => {
+
+                const reference =
+                    document
+                        .getElementById(
+                            "paymentReference"
+                        )
+                        .value
+                        .trim();
+
+                const message =
+                    document.getElementById(
+                        "paymentMessage"
+                    );
+
+                const sendButton =
+                    document.getElementById(
+                        "sendPaymentButton"
+                    );
+
+                if (!reference) {
+
+                    message.textContent =
+                        "Ingresa el número de operación.";
+
+                    message.style.color =
+                        "#fca5a5";
+
+                    return;
+                }
+
+                sendButton.disabled = true;
+
+                message.textContent =
+                    "Enviando confirmación...";
+
+                message.style.color =
+                    "#00e5ff";
+
+                try {
+
+                    const {
+                        data: result,
+                        error
+                    } = await client.rpc(
+                        "submit_payment",
+                        {
+                            p_ticket_code:
+                                data.ticket_code,
+
+                            p_whatsapp:
+                                whatsapp,
+
+                            p_payment_reference:
+                                reference
+                        }
+                    );
+
+                    if (error) {
+                        throw error;
+                    }
+
+                    if (
+                        !result ||
+                        !result.success
+                    ) {
+                        throw new Error(
+                            "No se pudo registrar el pago."
+                        );
+                    }
+
+                    message.textContent =
+                        "✅ Pago reportado correctamente. " +
+                        "Quedará pendiente de verificación.";
+
+                    message.style.color =
+                        "#34d399";
+
+                    document
+                        .getElementById(
+                            "reportPaymentButton"
+                        )
+                        .style.display = "none";
+
+                    document
+                        .getElementById(
+                            "paymentReference"
+                        )
+                        .disabled = true;
+
+                    sendButton.style.display =
+                        "none";
+
+                } catch (error) {
+
+                    console.error(
+                        "Error reportando pago:",
+                        error
+                    );
+
+                    message.textContent =
+                        "No se pudo registrar el pago: " +
+                        error.message;
+
+                    message.style.color =
+                        "#fca5a5";
+
+                    sendButton.disabled = false;
+                }
+            }
+        );
+
+    /* Nueva reserva */
+
+    document
+        .getElementById(
+            "ticketNewReservationButton"
+        )
         .addEventListener("click", () => {
 
             ticketBox.remove();
 
             publicSelectedNumbers.clear();
 
-            document.getElementById("publicFullName").value = "";
-            document.getElementById("publicWhatsapp").value = "";
+            document.getElementById(
+                "publicFullName"
+            ).value = "";
+
+            document.getElementById(
+                "publicWhatsapp"
+            ).value = "";
 
             renderPublicNumbers();
 
@@ -246,23 +528,30 @@ function showTicket(data, selectedNumbers) {
 ========================================================= */
 
 async function loadPublicNumbers() {
+
     try {
 
-        showPublicMessage("Cargando números...");
+        showPublicMessage(
+            "Cargando números..."
+        );
 
-        const { data: raffle, error: raffleError } =
-            await client
-                .from("raffles")
-                .select(
-                    "id, name, status, price_per_number"
-                )
-                .eq(
-                    "name",
-                    "NEON DRAW - PRUEBA"
-                )
-                .maybeSingle();
+        const {
+            data: raffle,
+            error: raffleError
+        } = await client
+            .from("raffles")
+            .select(
+                "id, name, status, price_per_number"
+            )
+            .eq(
+                "name",
+                "NEON DRAW - PRUEBA"
+            )
+            .maybeSingle();
 
-        if (raffleError) throw raffleError;
+        if (raffleError) {
+            throw raffleError;
+        }
 
         if (!raffle) {
             throw new Error(
@@ -279,22 +568,35 @@ async function loadPublicNumbers() {
         raffleId = raffle.id;
 
         demoPrice =
-            Number(raffle.price_per_number);
+            Number(
+                raffle.price_per_number
+            );
 
         const {
             data: numbers,
             error: numbersError
         } = await client
             .from("raffle_numbers")
-            .select("number, status")
-            .eq("raffle_id", raffle.id)
-            .order("number", {
-                ascending: true
-            });
+            .select(
+                "number, status"
+            )
+            .eq(
+                "raffle_id",
+                raffle.id
+            )
+            .order(
+                "number",
+                {
+                    ascending: true
+                }
+            );
 
-        if (numbersError) throw numbersError;
+        if (numbersError) {
+            throw numbersError;
+        }
 
-        publicNumbers = numbers || [];
+        publicNumbers =
+            numbers || [];
 
         renderPublicNumbers();
 
@@ -311,94 +613,124 @@ async function loadPublicNumbers() {
         );
 
         showPublicMessage(
-            "Error: " + error.message,
+            "Error: " +
+            error.message,
             "#fca5a5"
         );
     }
 }
 
 /* =========================================================
-   SELECCIÓN DE NÚMEROS
+   SELECCIÓN
 ========================================================= */
 
 document
-    .getElementById("publicNumbersGrid")
-    .addEventListener("click", event => {
+    .getElementById(
+        "publicNumbersGrid"
+    )
+    .addEventListener(
+        "click",
+        event => {
 
-        const button =
-            event.target.closest(
-                "button[data-number]"
-            );
+            const button =
+                event.target.closest(
+                    "button[data-number]"
+                );
 
-        if (!button || button.disabled) return;
+            if (
+                !button ||
+                button.disabled
+            ) {
+                return;
+            }
 
-        const number =
-            Number(button.dataset.number);
+            const number =
+                Number(
+                    button.dataset.number
+                );
 
-        const record =
-            publicNumbers.find(
-                item => item.number === number
-            );
+            const record =
+                publicNumbers.find(
+                    item =>
+                        item.number === number
+                );
 
-        if (
-            !record ||
-            record.status !== "available"
-        ) {
-            return;
+            if (
+                !record ||
+                record.status !== "available"
+            ) {
+                return;
+            }
+
+            if (
+                publicSelectedNumbers.has(
+                    number
+                )
+            ) {
+
+                publicSelectedNumbers.delete(
+                    number
+                );
+
+            } else {
+
+                publicSelectedNumbers.add(
+                    number
+                );
+            }
+
+            renderPublicNumbers();
         }
-
-        if (
-            publicSelectedNumbers.has(number)
-        ) {
-            publicSelectedNumbers.delete(number);
-        } else {
-            publicSelectedNumbers.add(number);
-        }
-
-        renderPublicNumbers();
-    });
+    );
 
 /* =========================================================
    LIMPIAR
 ========================================================= */
 
 document
-    .getElementById("publicClearButton")
-    .addEventListener("click", () => {
+    .getElementById(
+        "publicClearButton"
+    )
+    .addEventListener(
+        "click",
+        () => {
 
-        publicSelectedNumbers.clear();
+            publicSelectedNumbers.clear();
 
-        document.getElementById(
-            "publicFullName"
-        ).value = "";
-
-        document.getElementById(
-            "publicWhatsapp"
-        ).value = "";
-
-        const ticketBox =
             document.getElementById(
-                "publicTicketBox"
+                "publicFullName"
+            ).value = "";
+
+            document.getElementById(
+                "publicWhatsapp"
+            ).value = "";
+
+            const ticketBox =
+                document.getElementById(
+                    "publicTicketBox"
+                );
+
+            if (ticketBox) {
+                ticketBox.remove();
+            }
+
+            renderPublicNumbers();
+
+            showPublicMessage(
+                "Selección limpiada.",
+                "#00e5ff"
             );
-
-        if (ticketBox) {
-            ticketBox.remove();
         }
-
-        renderPublicNumbers();
-
-        showPublicMessage(
-            "Selección limpiada.",
-            "#00e5ff"
-        );
-    });
+    );
 
 /* =========================================================
    REGISTRAR RESERVA
 ========================================================= */
 
 document
-    .getElementById("publicSubmitButton")
+    .getElementById(
+        "publicSubmitButton"
+    )
     .addEventListener(
         "click",
         async () => {
@@ -421,9 +753,13 @@ document
 
             const selectedNumbers =
                 [...publicSelectedNumbers]
-                    .sort((a, b) => a - b);
+                    .sort(
+                        (a, b) => a - b
+                    );
 
-            if (!selectedNumbers.length) {
+            if (
+                !selectedNumbers.length
+            ) {
 
                 showPublicMessage(
                     "Selecciona al menos un número.",
@@ -472,14 +808,23 @@ document
                 } = await client.rpc(
                     "demo_register_participant",
                     {
-                        p_raffle_id: raffleId,
-                        p_full_name: fullName,
-                        p_whatsapp: whatsapp,
-                        p_numbers: selectedNumbers
+                        p_raffle_id:
+                            raffleId,
+
+                        p_full_name:
+                            fullName,
+
+                        p_whatsapp:
+                            whatsapp,
+
+                        p_numbers:
+                            selectedNumbers
                     }
                 );
 
-                if (error) throw error;
+                if (error) {
+                    throw error;
+                }
 
                 console.log(
                     "Reserva creada:",
@@ -497,7 +842,8 @@ document
 
                 showTicket(
                     data,
-                    selectedNumbers
+                    selectedNumbers,
+                    whatsapp
                 );
 
             } catch (error) {

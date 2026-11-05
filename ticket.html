@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080b16">
+<title>NEON DRAW | Ticket</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;padding:24px;background:#080b16;color:#fff;font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center}.container{width:100%;max-width:520px;padding:28px;border:1px solid #26334d;border-radius:20px;background:#111827;box-shadow:0 0 35px #00e5ff18}.logo{text-align:center;color:#00e5ff;font-weight:800;letter-spacing:5px;margin-bottom:18px}h1{text-align:center;margin:0 0 8px;font-size:30px}.subtitle{text-align:center;color:#94a3b8;line-height:1.5;margin-bottom:24px}label{display:block;margin:12px 0 6px;color:#cbd5e1;font-size:14px}input{width:100%;padding:13px;border-radius:9px;border:1px solid #334155;background:#0f172a;color:#fff;font-size:16px}button{width:100%;margin-top:16px;padding:13px;border:0;border-radius:9px;background:#00e5ff;color:#07111b;font-weight:800;cursor:pointer}.message{margin-top:14px;text-align:center;min-height:20px}.ticket{margin-top:24px;padding:22px;border:1px solid rgba(0,229,255,.45);border-radius:18px;background:linear-gradient(145deg,rgba(0,229,255,.08),rgba(0,0,0,.35))}.ticket-code{margin:14px 0;padding:18px;border-radius:14px;background:#020b12;text-align:center}.ticket-code small{display:block;color:#94a3b8;margin-bottom:6px}.ticket-code strong{color:#00e5ff;font-size:30px;letter-spacing:3px}.row{display:flex;justify-content:space-between;gap:15px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.06)}.row span:first-child{color:#94a3b8}.numbers{margin-top:16px;padding:14px;border-radius:12px;background:#020617;color:#fff;font-weight:800;text-align:center;letter-spacing:1px}.status{margin-top:16px;padding:12px;border-radius:12px;text-align:center;font-weight:800}.pending{background:rgba(250,204,21,.12);color:#facc15}.confirmed{background:rgba(52,211,153,.12);color:#34d399}.rejected{background:rgba(248,113,113,.12);color:#f87171}.back{display:block;margin-top:18px;text-align:center;color:#00e5ff;text-decoration:none}@media(max-width:520px){body{padding:12px}.container{padding:20px}.ticket-code strong{font-size:25px}}
+</style>
+</head>
+<body>
+<main class="container">
+<div class="logo">NEON DRAW</div>
+<h1>🎟️ Ticket digital</h1>
+<p class="subtitle">Consulta el estado de tu reserva con tu código y WhatsApp.</p>
+<form id="ticketForm">
+<label for="ticketCode">Código de ticket</label>
+<input id="ticketCode" type="text" placeholder="Ej. ND-C43E3C" autocomplete="off" required>
+<label for="ticketWhatsapp">WhatsApp</label>
+<input id="ticketWhatsapp" type="tel" placeholder="Ej. 963963987" autocomplete="tel" required>
+<button id="searchButton" type="submit">🔎 CONSULTAR TICKET</button>
+</form>
+<div id="message" class="message"></div>
+<div id="ticketResult"></div>
+<a class="back" href="./">← Volver a NEON DRAW</a>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script src="js/ticket.js?v=20261105-1"></script>
+</body>
+</html>

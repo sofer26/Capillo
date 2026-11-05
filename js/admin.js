@@ -52,7 +52,7 @@ async function loadNumbers() {
     const { data: raffle, error: raffleError } = await client
       .from("raffles")
       .select("id, name, status, total_numbers")
-      .eq("name", "NEON DRAW - DEMO")
+      .eq("name", "NEON DRAW - PRUEBA")
       .maybeSingle();
 
     if (raffleError) throw raffleError;

@@ -595,10 +595,13 @@ async function loadPublicNumbers() {
             throw numbersError;
         }
 
-        publicNumbers =
-            numbers || [];
+     publicNumbers = numbers || [];
 
-        renderPublicNumbers();
+console.log("RAFFLE ID:", raffle.id);
+console.log("NÚMEROS RECIBIDOS:", numbers);
+console.log("CANTIDAD DE NÚMEROS:", publicNumbers.length);
+
+renderPublicNumbers();
 
         showPublicMessage(
             "Selecciona tus números para participar.",

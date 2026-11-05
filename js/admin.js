@@ -55,11 +55,15 @@ async function loadNumbers() {
       .eq("name", "NEON DRAW - PRUEBA")
       .maybeSingle();
 
-    if (raffleError) throw raffleError;
-    if (!raffle) throw new Error("No se encontró el sorteo demo.");
-    if (raffle.status !== "demo") {
-      throw new Error("El sorteo no está en modo demostración.");
-    }
+if (raffleError) throw raffleError;
+
+if (!raffle) {
+    throw new Error("No se encontró el sorteo.");
+}
+
+if (raffle.status !== "active") {
+    throw new Error("El sorteo no está activo.");
+}
 
     const { data: numbers, error: numbersError } = await client
       .from("raffle_numbers")

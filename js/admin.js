@@ -58,11 +58,11 @@ async function loadNumbers() {
 if (raffleError) throw raffleError;
 
 if (!raffle) {
-    throw new Error("No se encontró el sorteo.");
+  throw new Error("No se encontró el sorteo.");
 }
 
 if (raffle.status !== "active") {
-    throw new Error("El sorteo no está activo.");
+  throw new Error("El sorteo no está activo.");
 }
 
     const { data: numbers, error: numbersError } = await client

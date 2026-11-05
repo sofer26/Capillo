@@ -38,8 +38,10 @@ async function verifyAdmin(user) {
     return;
   }
 
-  showPanel(user.email);
-  await loadNumbers();
+showPanel(user.email);
+
+await loadNumbers();
+await loadPendingPayments();
 }
 
 async function loadNumbers() {
@@ -478,3 +480,560 @@ if (pendingReservation) {
 document
     .getElementById("refreshParticipantsButton")
     .addEventListener("click", loadParticipants);
+
+/* =========================================================
+   PAGOS PENDIENTES
+========================================================= */
+
+function ensurePendingPaymentsSection() {
+
+    if (document.getElementById("pendingPaymentsSection")) {
+        return;
+    }
+
+    const section = document.createElement("section");
+
+    section.id = "pendingPaymentsSection";
+
+    section.style.marginTop = "30px";
+    section.style.padding = "20px";
+    section.style.border = "1px solid rgba(0,229,255,.25)";
+    section.style.borderRadius = "16px";
+    section.style.background = "rgba(0,0,0,.18)";
+
+    section.innerHTML = `
+        <div style="
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:12px;
+            flex-wrap:wrap;
+        ">
+            <div>
+                <h2 style="margin:0;color:#00e5ff;">
+                    💳 Pagos pendientes
+                </h2>
+
+                <p style="
+                    margin-top:6px;
+                    color:#94a3b8;
+                ">
+                    Revisa los pagos reportados por los participantes.
+                </p>
+            </div>
+
+            <button
+                id="refreshPaymentsButton"
+                type="button"
+                style="
+                    padding:10px 14px;
+                    border:none;
+                    border-radius:8px;
+                    cursor:pointer;
+                    font-weight:700;
+                "
+            >
+                🔄 Actualizar pagos
+            </button>
+        </div>
+
+        <div
+            id="pendingPaymentsContainer"
+            style="margin-top:18px;"
+        >
+            <p style="color:#94a3b8;">
+                Cargando pagos pendientes...
+            </p>
+        </div>
+    `;
+
+    panelSection.appendChild(section);
+
+    document
+        .getElementById("refreshPaymentsButton")
+        .addEventListener(
+            "click",
+            loadPendingPayments
+        );
+}
+
+
+/* =========================================================
+   CARGAR PAGOS
+========================================================= */
+
+async function loadPendingPayments() {
+
+    ensurePendingPaymentsSection();
+
+    const container =
+        document.getElementById(
+            "pendingPaymentsContainer"
+        );
+
+    const button =
+        document.getElementById(
+            "refreshPaymentsButton"
+        );
+
+    if (button) {
+        button.disabled = true;
+        button.textContent = "Cargando...";
+    }
+
+    container.innerHTML = `
+        <p style="color:#94a3b8;">
+            Consultando pagos pendientes...
+        </p>
+    `;
+
+    try {
+
+        const { data, error } = await client
+            .from("reservations")
+            .select(`
+                id,
+                ticket_code,
+                status,
+                payment_status,
+                payment_reference,
+                payment_submitted_at,
+                created_at,
+                participant_id,
+                participants (
+                    full_name,
+                    whatsapp
+                ),
+                reservation_numbers (
+                    raffle_number_id,
+                    raffle_numbers (
+                        number
+                    )
+                )
+            `)
+            .eq("payment_status", "submitted")
+            .eq("status", "pending")
+            .order(
+                "payment_submitted_at",
+                {
+                    ascending: false
+                }
+            );
+
+        if (error) {
+            throw error;
+        }
+
+        if (!data || data.length === 0) {
+
+            container.innerHTML = `
+                <div style="
+                    padding:20px;
+                    text-align:center;
+                    border-radius:12px;
+                    background:rgba(52,211,153,.08);
+                    border:1px solid rgba(52,211,153,.2);
+                ">
+                    <strong style="color:#34d399;">
+                        ✅ No hay pagos pendientes
+                    </strong>
+
+                    <p style="
+                        margin-top:6px;
+                        color:#94a3b8;
+                    ">
+                        Cuando un cliente reporte un pago,
+                        aparecerá aquí.
+                    </p>
+                </div>
+            `;
+
+            return;
+        }
+
+
+        container.innerHTML = "";
+
+
+        data.forEach(reservation => {
+
+            const participant =
+                reservation.participants || {};
+
+            const numbers =
+                (reservation.reservation_numbers || [])
+                    .map(item =>
+                        item.raffle_numbers
+                            ? item.raffle_numbers.number
+                            : null
+                    )
+                    .filter(number => number !== null)
+                    .sort((a, b) => a - b);
+
+            const total =
+                numbers.length * DEMO_PRICE;
+
+            const formattedNumbers =
+                numbers
+                    .map(number =>
+                        String(number).padStart(2, "0")
+                    )
+                    .join(", ");
+
+            const card =
+                document.createElement("div");
+
+            card.style.padding = "18px";
+            card.style.marginBottom = "14px";
+            card.style.borderRadius = "14px";
+            card.style.border =
+                "1px solid rgba(250,204,21,.25)";
+            card.style.background =
+                "rgba(250,204,21,.05)";
+
+
+            card.innerHTML = `
+
+                <div style="
+                    display:flex;
+                    justify-content:space-between;
+                    gap:10px;
+                    flex-wrap:wrap;
+                    align-items:center;
+                ">
+
+                    <strong style="
+                        font-size:20px;
+                        color:#00e5ff;
+                    ">
+                        🎟️ ${reservation.ticket_code || "Sin código"}
+                    </strong>
+
+                    <span style="
+                        padding:5px 9px;
+                        border-radius:20px;
+                        background:rgba(250,204,21,.15);
+                        color:#facc15;
+                        font-size:12px;
+                        font-weight:700;
+                    ">
+                        🟡 PAGO REPORTADO
+                    </span>
+
+                </div>
+
+
+                <div style="margin-top:14px;line-height:1.8;">
+
+                    <div>
+                        👤
+                        <strong>
+                            ${participant.full_name || "Sin nombre"}
+                        </strong>
+                    </div>
+
+                    <div>
+                        📱
+                        ${participant.whatsapp || "Sin WhatsApp"}
+                    </div>
+
+                    <div>
+                        🎯
+                        Números:
+                        <strong>
+                            ${formattedNumbers || "Sin números"}
+                        </strong>
+                    </div>
+
+                    <div>
+                        💰
+                        Total:
+                        <strong>
+                            S/ ${total.toFixed(2)}
+                        </strong>
+                    </div>
+
+                    <div>
+                        🧾
+                        Operación:
+                        <strong>
+                            ${reservation.payment_reference || "No indicada"}
+                        </strong>
+                    </div>
+
+                    <div style="
+                        color:#94a3b8;
+                        font-size:13px;
+                    ">
+                        🕐 Pago reportado:
+                        ${
+                            reservation.payment_submitted_at
+                                ? new Date(
+                                    reservation.payment_submitted_at
+                                  ).toLocaleString("es-PE")
+                                : "Sin fecha"
+                        }
+                    </div>
+
+                </div>
+
+
+                <div style="
+                    display:flex;
+                    gap:10px;
+                    flex-wrap:wrap;
+                    margin-top:16px;
+                ">
+
+                    <button
+                        type="button"
+                        class="confirm-payment-button"
+                        data-id="${reservation.id}"
+                        style="
+                            flex:1;
+                            min-width:160px;
+                            padding:12px;
+                            border:none;
+                            border-radius:9px;
+                            cursor:pointer;
+                            background:#34d399;
+                            color:#07111b;
+                            font-weight:800;
+                        "
+                    >
+                        ✅ CONFIRMAR PAGO
+                    </button>
+
+
+                    <button
+                        type="button"
+                        class="reject-payment-button"
+                        data-id="${reservation.id}"
+                        style="
+                            flex:1;
+                            min-width:160px;
+                            padding:12px;
+                            border:none;
+                            border-radius:9px;
+                            cursor:pointer;
+                            background:#ef4444;
+                            color:white;
+                            font-weight:800;
+                        "
+                    >
+                        ❌ RECHAZAR
+                    </button>
+
+
+                    <a
+                        href="https://wa.me/51${String(
+                            participant.whatsapp || ""
+                        ).replace(/\\D/g, "")}"
+                        target="_blank"
+                        rel="noopener"
+                        style="
+                            flex:1;
+                            min-width:160px;
+                            padding:12px;
+                            border-radius:9px;
+                            text-align:center;
+                            text-decoration:none;
+                            background:#25d366;
+                            color:white;
+                            font-weight:800;
+                        "
+                    >
+                        📲 WHATSAPP
+                    </a>
+
+                </div>
+            `;
+
+
+            container.appendChild(card);
+        });
+
+
+        document
+            .querySelectorAll(".confirm-payment-button")
+            .forEach(button => {
+
+                button.addEventListener(
+                    "click",
+                    () =>
+                        confirmPayment(
+                            button.dataset.id
+                        )
+                );
+
+            });
+
+
+        document
+            .querySelectorAll(".reject-payment-button")
+            .forEach(button => {
+
+                button.addEventListener(
+                    "click",
+                    () =>
+                        rejectPayment(
+                            button.dataset.id
+                        )
+                );
+
+            });
+
+
+    } catch (error) {
+
+        console.error(
+            "Error cargando pagos:",
+            error
+        );
+
+        container.innerHTML = `
+            <p style="color:#fca5a5;">
+                ❌ No se pudieron cargar los pagos:
+                ${error.message}
+            </p>
+        `;
+
+    } finally {
+
+        if (button) {
+            button.disabled = false;
+            button.textContent = "🔄 Actualizar pagos";
+        }
+
+    }
+}
+
+
+/* =========================================================
+   CONFIRMAR PAGO
+========================================================= */
+
+async function confirmPayment(reservationId) {
+
+    const confirmed =
+        confirm(
+            "¿Confirmar que el pago fue recibido correctamente?"
+        );
+
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+
+        const { data, error } =
+            await client.rpc(
+                "confirm_reservation_payment",
+                {
+                    p_reservation_id:
+                        reservationId
+                }
+            );
+
+        if (error) {
+            throw error;
+        }
+
+        console.log(
+            "Pago confirmado:",
+            data
+        );
+
+        alert(
+            "✅ Pago confirmado correctamente.\n\n" +
+            "Los números ahora están marcados como PAGADOS."
+        );
+
+        await loadPendingPayments();
+        await loadNumbers();
+        await loadParticipants();
+
+    } catch (error) {
+
+        console.error(
+            "Error confirmando pago:",
+            error
+        );
+
+        alert(
+            "❌ No se pudo confirmar el pago.\n\n" +
+            error.message
+        );
+    }
+}
+
+
+/* =========================================================
+   RECHAZAR PAGO
+========================================================= */
+
+async function rejectPayment(reservationId) {
+
+    const reason =
+        prompt(
+            "Motivo del rechazo (opcional):"
+        );
+
+    if (reason === null) {
+        return;
+    }
+
+    const confirmed =
+        confirm(
+            "¿Rechazar este pago y liberar los números?"
+        );
+
+    if (!confirmed) {
+        return;
+    }
+
+    try {
+
+        const { data, error } =
+            await client.rpc(
+                "reject_reservation_payment",
+                {
+                    p_reservation_id:
+                        reservationId,
+
+                    p_reason:
+                        reason
+                }
+            );
+
+        if (error) {
+            throw error;
+        }
+
+        console.log(
+            "Pago rechazado:",
+            data
+        );
+
+        alert(
+            "❌ Pago rechazado.\n\n" +
+            "Los números fueron liberados nuevamente."
+        );
+
+        await loadPendingPayments();
+        await loadNumbers();
+        await loadParticipants();
+
+    } catch (error) {
+
+        console.error(
+            "Error rechazando pago:",
+            error
+        );
+
+        alert(
+            "No se pudo rechazar el pago.\n\n" +
+            error.message
+        );
+    }
+}
